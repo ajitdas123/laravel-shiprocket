@@ -35,7 +35,7 @@ Entry points on `Madgeek\LaravelShiprocket\Facades\Shiprocket`:
 
 - `auth()`: optional only — `getToken()`, `login()`, `logout()`. Other services authenticate themselves.
 - `orders()`: `create()`, `createForChannel()`, `update()`, `updatePickupLocation($ids, $location)`, `updateDeliveryAddress()`, `cancel($ids)`, `list($filters)`, `find($id)`, `export()`
-- `couriers()`: `serviceability($query)`, `list($type)`, `assignAwb($shipmentId, $courierId, reassign: bool)`, `requestPickup($shipmentIds, $options)`
+- `couriers()`: `isServiceable($from, $to, $cod = false, $weight = 0.5)`, `availableCouriers($from, $to, $cod = false, $weight = 0.5)`, `isCodAvailable($from, $to, $weight = 0.5)`, `serviceability($query)` for the full payload, `list($type)`, `assignAwb($shipmentId, $courierId, reassign: bool)`, `requestPickup($shipmentIds, $options)`
 - `shipments()`: `list($filters)`, `find($id)`, `cancel($awbs)`
 - `documents()`: `generateLabel()`, `generateManifest()`, `printManifest()`, `generateInvoice()`, `generateLabelAndInvoice()`
 - `account()`: `walletBalance()`
@@ -62,23 +62,21 @@ Create an order and ship it with the cheapest courier:
 ```php
 use Madgeek\LaravelShiprocket\Facades\Shiprocket;
 
+if (! Shiprocket::couriers()->isServiceable(110030, 122002)->json('serviceable')) {
+    return;
+}
+
 $order = Shiprocket::orders()->create($payload);
 $shipmentId = $order->json('shipment_id');
 
-$couriers = Shiprocket::couriers()->serviceability([
-    'order_id' => $order->json('order_id'),
-    'pickup_postcode' => 110030,
-    'delivery_postcode' => 122002,
-    'cod' => 0,
-    'weight' => 2.5,
-]);
-
-$courierId = $couriers->json('data.recommended_courier_company_id');
+$courierId = Shiprocket::couriers()->availableCouriers(110030, 122002, weight: 2.5)
+    ->json('data.available_courier_companies.0.courier_company_id');
 
 $awb = Shiprocket::couriers()->assignAwb($shipmentId, $courierId)->json('response.data.awb_code');
 Shiprocket::couriers()->requestPickup($shipmentId);
 $labelUrl = Shiprocket::documents()->generateLabel($shipmentId)->json('label_url');
 ```
+
 
 Test it without calling Shiprocket:
 

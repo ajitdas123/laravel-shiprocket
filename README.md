@@ -106,7 +106,15 @@ Shiprocket::orders()->export(); // Shiprocket emails a CSV download link
 
 ### Couriers and serviceability
 
+`serviceability()` returns the full Shiprocket payload. Prefer the helpers when you only need a boolean check or the courier list. `$from` is the pickup pincode and `$to` is the delivery pincode. COD defaults to prepaid (`false`), and weight defaults to `0.5` kg (Shiprocket requires it when no order id is sent).
+
 ```php
+$serviceable = Shiprocket::couriers()->isServiceable(110030, 122002)->json('serviceable');
+$codAvailable = Shiprocket::couriers()->isCodAvailable(110030, 122002)->json('cod_available');
+$couriers = Shiprocket::couriers()->availableCouriers(110030, 122002, cod: true, weight: 2)
+    ->json('data.available_courier_companies');
+
+// Full Shiprocket payload when you need recommendations and every nested field:
 Shiprocket::couriers()->serviceability([
     'pickup_postcode' => 110030,
     'delivery_postcode' => 122002,
@@ -124,6 +132,8 @@ Shiprocket::couriers()->requestPickup($shipmentId);
 Shiprocket::couriers()->requestPickup($shipmentId, ['pickup_date' => ['2026-10-01']]);
 Shiprocket::couriers()->requestPickup($shipmentId, ['status' => 'retry']);
 ```
+
+`isServiceable()` and `isCodAvailable()` keep the usual `ShiprocketResponse` shape with an empty `data` array and a boolean flag (`serviceable` / `cod_available`). `availableCouriers()` returns only `data.available_courier_companies` (rates, ETDs, and the other courier fields Shiprocket sends).
 
 ### Shipments
 
