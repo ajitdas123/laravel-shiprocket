@@ -15,6 +15,7 @@ use Madgeek\LaravelShiprocket\Services\AccountService;
 use Madgeek\LaravelShiprocket\Services\AuthService;
 use Madgeek\LaravelShiprocket\Services\CourierService;
 use Madgeek\LaravelShiprocket\Services\DocumentService;
+use Madgeek\LaravelShiprocket\Services\FulfillmentService;
 use Madgeek\LaravelShiprocket\Services\OrderService;
 use Madgeek\LaravelShiprocket\Services\PickupLocationService;
 use Madgeek\LaravelShiprocket\Services\ShipmentService;
@@ -70,6 +71,7 @@ class ShiprocketServiceProvider extends ServiceProvider
         $this->app->singleton(DocumentService::class);
         $this->app->singleton(PickupLocationService::class);
         $this->app->singleton(AccountService::class);
+        $this->app->singleton(FulfillmentService::class);
         $this->app->singleton(ShiprocketManager::class);
     }
 

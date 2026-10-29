@@ -10,7 +10,7 @@
     <a href="https://packagist.org/packages/ajit-das/laravel-shiprocket"><img src="https://img.shields.io/packagist/dt/ajit-das/laravel-shiprocket.svg?style=flat-square" alt="Total Downloads"></a>
 </p>
 
-Laravel client for the Shiprocket API: orders, couriers, serviceability, shipments, labels, manifests, and wallet balance.
+Laravel client for the Shiprocket API: orders, couriers, serviceability, shipments, labels, manifests, wallet balance, and a one-call fulfill flow.
 
 ## Installation
 
@@ -63,33 +63,70 @@ $response = Shiprocket::auth()->login(); // force a fresh login; token is in $re
 Shiprocket::auth()->logout();            // invalidate with Shiprocket and clear the local cache
 ```
 
-### Orders
+### Fulfill in one call (recommended for ship + documents)
+
+`fulfill()->create()` checks wallet balance, then uses Shiprocket’s forward-shipment wrapper (order + AWB + label + manifest + pickup) and generates an invoice. It returns a `FulfillmentResult` with the IDs and URLs you usually need.
 
 ```php
-$order = Shiprocket::orders()->create([
-    'order_id' => '224-447',
-    'order_date' => '2026-09-25 11:11',
-    'pickup_location' => 'Primary',
-    'billing_customer_name' => 'Naruto',
-    'billing_last_name' => 'Uzumaki',
-    'billing_address' => 'House 221B, Leaf Village',
-    'billing_city' => 'New Delhi',
-    'billing_pincode' => 110002,
-    'billing_state' => 'Delhi',
-    'billing_country' => 'India',
-    'billing_email' => 'naruto@example.com',
-    'billing_phone' => 9876543210,
-    'shipping_is_billing' => true,
-    'order_items' => [
-        ['name' => 'Kunai', 'sku' => 'chakra123', 'units' => 10, 'selling_price' => 900],
-    ],
-    'payment_method' => 'Prepaid',
-    'sub_total' => 9000,
-    'length' => 10,
-    'breadth' => 15,
-    'height' => 20,
-    'weight' => 2.5,
-]);
+use Madgeek\LaravelShiprocket\Exceptions\InsufficientBalanceException;
+use Madgeek\LaravelShiprocket\Exceptions\ShipmentPipelineException;
+use Madgeek\LaravelShiprocket\Facades\Shiprocket;
+
+try {
+    $result = Shiprocket::fulfill()->create([
+        'order_id' => '224-447',
+        'order_date' => '2026-09-25 11:11',
+        'pickup_location' => 'Primary',
+        'billing_customer_name' => 'Naruto',
+        'billing_last_name' => 'Uzumaki',
+        'billing_address' => 'House 221B, Leaf Village',
+        'billing_city' => 'New Delhi',
+        'billing_pincode' => 110002,
+        'billing_state' => 'Delhi',
+        'billing_country' => 'India',
+        'billing_email' => 'naruto@example.com',
+        'billing_phone' => 9876543210,
+        'shipping_is_billing' => true,
+        'order_items' => [
+            ['name' => 'Kunai', 'sku' => 'chakra123', 'units' => 10, 'selling_price' => 900],
+        ],
+        'payment_method' => 'Prepaid',
+        'sub_total' => 9000,
+        'length' => 10,
+        'breadth' => 15,
+        'height' => 20,
+        'weight' => 2.5,
+    ], [
+        'courier_id' => 10,              // optional; omit for Shiprocket’s default
+        'pickup_postcode' => 110030,     // used with weight + delivery pincode to estimate min balance
+        'request_pickup' => true,
+        'print_label' => true,
+        'generate_manifest' => true,
+        'generate_invoice' => true,
+        // 'min_balance' => 100,         // optional override instead of rate estimate
+    ]);
+
+    $result->orderId();
+    $result->shipmentId();
+    $result->awbCode();
+    $result->labelUrl();
+    $result->manifestUrl();
+    $result->invoiceUrl();
+    $result->toArray();
+} catch (InsufficientBalanceException $e) {
+    // nothing created — top up wallet ($e->balance / $e->required)
+} catch (ShipmentPipelineException $e) {
+    // later step failed; $e->step() is e.g. "invoice" or "forward"
+    $partial = $e->result(); // may already have order/shipment/awb/label/manifest
+}
+```
+
+### Orders
+
+Use these when you need step-by-step control instead of `fulfill()->create()`.
+
+```php
+$order = Shiprocket::orders()->create([/* same order payload as above */]);
 
 $shipmentId = $order->json('shipment_id');
 
@@ -190,7 +227,7 @@ php artisan shiprocket:wallet
 
 ### Errors and events
 
-Non-2xx responses throw `Madgeek\LaravelShiprocket\Exceptions\RequestFailedException`. Rejected credentials throw `AuthenticationException`. Both extend `ShiprocketException`, and `RequestFailedException::$response` holds the status and body, including Shiprocket's validation `errors`.
+Non-2xx responses throw `Madgeek\LaravelShiprocket\Exceptions\RequestFailedException`. Rejected credentials throw `AuthenticationException`. `fulfill()->create()` can also throw `InsufficientBalanceException` (nothing created) or `ShipmentPipelineException` (partial result via `$e->result()`). These extend `ShiprocketException`, and `RequestFailedException::$response` holds the status and body, including Shiprocket's validation `errors`.
 
 Each request dispatches `Madgeek\LaravelShiprocket\Events\RequestSending`, then `RequestSent` or `RequestFailed`.
 

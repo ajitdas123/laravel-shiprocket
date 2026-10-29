@@ -10,6 +10,7 @@ use Madgeek\LaravelShiprocket\Services\AccountService;
 use Madgeek\LaravelShiprocket\Services\AuthService;
 use Madgeek\LaravelShiprocket\Services\CourierService;
 use Madgeek\LaravelShiprocket\Services\DocumentService;
+use Madgeek\LaravelShiprocket\Services\FulfillmentService;
 use Madgeek\LaravelShiprocket\Services\OrderService;
 use Madgeek\LaravelShiprocket\Services\PickupLocationService;
 use Madgeek\LaravelShiprocket\Services\ShipmentService;
@@ -29,6 +30,7 @@ use Madgeek\LaravelShiprocket\Transport\Transport;
  * @method static DocumentService documents()
  * @method static PickupLocationService pickupLocations()
  * @method static AccountService account()
+ * @method static FulfillmentService fulfill()
  *
  * Authentication is automatic from SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD.
  * Prefer orders(), couriers(), and the other services over auth() unless you
@@ -103,6 +105,7 @@ final class Shiprocket extends Facade
             DocumentService::class,
             PickupLocationService::class,
             AccountService::class,
+            FulfillmentService::class,
             ShiprocketManager::class,
             Credentials::class,
         ] as $abstract) {
