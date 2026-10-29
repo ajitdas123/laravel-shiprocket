@@ -155,6 +155,27 @@ Shiprocket::documents()->generateInvoice($orderId);
 Shiprocket::documents()->generateLabelAndInvoice($shipmentIds); // up to 200 shipments
 ```
 
+### Pickup locations
+
+```php
+$locations = Shiprocket::pickupLocations()->list()->json('data.shipping_address');
+
+Shiprocket::pickupLocations()->create([
+    'pickup_location' => 'Home', // nickname used as orders.pickup_location
+    'name' => 'Deadpool',
+    'email' => 'deadpool@chimichanga.com',
+    'phone' => '9777777779',
+    'address' => 'Mutant Facility, Sector 3',
+    'address_2' => '',
+    'city' => 'Pune',
+    'state' => 'Maharashtra',
+    'country' => 'India',
+    'pin_code' => '110022',
+]);
+```
+
+Use the nickname (`pickup_location`) when creating orders. To change an existing order's pickup location, use `Shiprocket::orders()->updatePickupLocation(...)`.
+
 ### Wallet balance
 
 ```php

@@ -2,8 +2,8 @@
 name: laravel-shiprocket-development
 description: >
   Configure and apply the Laravel Shiprocket package in Laravel applications: create orders,
-  check courier serviceability, assign AWBs, schedule pickups, generate labels and manifests,
-  read wallet balance, and fake Shiprocket in tests.
+  manage pickup locations, check courier serviceability, assign AWBs, schedule pickups,
+  generate labels and manifests, read wallet balance, and fake Shiprocket in tests.
 license: MIT
 metadata:
   author: Ajit Das
@@ -38,6 +38,7 @@ Entry points on `Madgeek\LaravelShiprocket\Facades\Shiprocket`:
 - `couriers()`: `isServiceable($from, $to, $cod = false, $weight = 0.5)`, `availableCouriers($from, $to, $cod = false, $weight = 0.5)`, `isCodAvailable($from, $to, $weight = 0.5)`, `serviceability($query)` for the full payload, `list($type)`, `assignAwb($shipmentId, $courierId, reassign: bool)`, `requestPickup($shipmentIds, $options)`
 - `shipments()`: `list($filters)`, `find($id)`, `cancel($awbs)`
 - `documents()`: `generateLabel()`, `generateManifest()`, `printManifest()`, `generateInvoice()`, `generateLabelAndInvoice()`
+- `pickupLocations()`: `list()`, `create($payload)` — account pickup addresses used as `orders.pickup_location`
 - `account()`: `walletBalance()`
 
 Order and address bodies are the arrays from the Shiprocket API docs. Id arguments accept one id or a list. Every call returns `ShiprocketResponse`; read values with `->json('dot.path')`.

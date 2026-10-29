@@ -11,6 +11,7 @@ use Madgeek\LaravelShiprocket\Services\AuthService;
 use Madgeek\LaravelShiprocket\Services\CourierService;
 use Madgeek\LaravelShiprocket\Services\DocumentService;
 use Madgeek\LaravelShiprocket\Services\OrderService;
+use Madgeek\LaravelShiprocket\Services\PickupLocationService;
 use Madgeek\LaravelShiprocket\Services\ShipmentService;
 use Madgeek\LaravelShiprocket\ShiprocketManager;
 use Madgeek\LaravelShiprocket\Support\Delivery;
@@ -26,6 +27,7 @@ use Madgeek\LaravelShiprocket\Transport\Transport;
  * @method static CourierService couriers()
  * @method static ShipmentService shipments()
  * @method static DocumentService documents()
+ * @method static PickupLocationService pickupLocations()
  * @method static AccountService account()
  *
  * Authentication is automatic from SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD.
@@ -99,6 +101,7 @@ final class Shiprocket extends Facade
             CourierService::class,
             ShipmentService::class,
             DocumentService::class,
+            PickupLocationService::class,
             AccountService::class,
             ShiprocketManager::class,
             Credentials::class,

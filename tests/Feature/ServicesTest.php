@@ -119,6 +119,27 @@ it('generates labels manifests and invoices', function () {
     Shiprocket::assertRequested('POST', '/v1/external/courier/generate/label-invoice', fn (RecordedRequest $request): bool => $request->payload === ['shipment_ids' => [123456789, 123456790]]);
 });
 
+it('lists and creates pickup locations', function () {
+    $location = [
+        'pickup_location' => 'Home',
+        'name' => 'Deadpool',
+        'email' => 'deadpool@chimichanga.com',
+        'phone' => '9777777779',
+        'address' => 'Mutant Facility, Sector 3',
+        'address_2' => '',
+        'city' => 'Pune',
+        'state' => 'Maharashtra',
+        'country' => 'India',
+        'pin_code' => '110022',
+    ];
+
+    Shiprocket::pickupLocations()->list();
+    Shiprocket::pickupLocations()->create($location);
+
+    Shiprocket::assertRequested('GET', '/v1/external/settings/company/pickup');
+    Shiprocket::assertRequested('POST', '/v1/external/settings/company/addpickup', fn (RecordedRequest $request): bool => $request->payload === $location);
+});
+
 it('fetches the wallet balance', function () {
     Shiprocket::account()->walletBalance();
 

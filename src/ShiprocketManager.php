@@ -9,6 +9,7 @@ use Madgeek\LaravelShiprocket\Services\AuthService;
 use Madgeek\LaravelShiprocket\Services\CourierService;
 use Madgeek\LaravelShiprocket\Services\DocumentService;
 use Madgeek\LaravelShiprocket\Services\OrderService;
+use Madgeek\LaravelShiprocket\Services\PickupLocationService;
 use Madgeek\LaravelShiprocket\Services\ShipmentService;
 
 final class ShiprocketManager
@@ -19,6 +20,7 @@ final class ShiprocketManager
         private readonly CourierService $couriers,
         private readonly ShipmentService $shipments,
         private readonly DocumentService $documents,
+        private readonly PickupLocationService $pickupLocations,
         private readonly AccountService $account,
     ) {}
 
@@ -45,6 +47,11 @@ final class ShiprocketManager
     public function documents(): DocumentService
     {
         return $this->documents;
+    }
+
+    public function pickupLocations(): PickupLocationService
+    {
+        return $this->pickupLocations;
     }
 
     public function account(): AccountService
