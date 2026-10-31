@@ -29,6 +29,7 @@ final readonly class FulfillmentResult
         public mixed $pickupTokenNumber = null,
         public float|int|string|null $walletBalance = null,
         public array $steps = [],
+        public ?string $expectedDeliveryDate = null,
     ) {}
 
     public function orderId(): mixed
@@ -76,6 +77,11 @@ final readonly class FulfillmentResult
         return $this->pickupScheduledDate;
     }
 
+    public function expectedDeliveryDate(): ?string
+    {
+        return $this->expectedDeliveryDate;
+    }
+
     public function walletBalance(): float|int|string|null
     {
         return $this->walletBalance;
@@ -92,6 +98,7 @@ final readonly class FulfillmentResult
      *     manifest_url: ?string,
      *     invoice_url: ?string,
      *     pickup_scheduled_date: mixed,
+     *     expected_delivery_date: ?string,
      *     pickup_token_number: mixed,
      *     wallet_balance: float|int|string|null,
      *     order_created: bool,
@@ -114,6 +121,7 @@ final readonly class FulfillmentResult
             'manifest_url' => $this->manifestUrl,
             'invoice_url' => $this->invoiceUrl,
             'pickup_scheduled_date' => $this->pickupScheduledDate,
+            'expected_delivery_date' => $this->expectedDeliveryDate,
             'pickup_token_number' => $this->pickupTokenNumber,
             'wallet_balance' => $this->walletBalance,
             'order_created' => (bool) ($this->steps['order_created'] ?? false),
@@ -145,6 +153,7 @@ final readonly class FulfillmentResult
             steps: array_key_exists('steps', $overrides) && is_array($overrides['steps'])
                 ? [...$this->steps, ...$overrides['steps']]
                 : $this->steps,
+            expectedDeliveryDate: array_key_exists('expectedDeliveryDate', $overrides) ? $overrides['expectedDeliveryDate'] : $this->expectedDeliveryDate,
         );
     }
 }

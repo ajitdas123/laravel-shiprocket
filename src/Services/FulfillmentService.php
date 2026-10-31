@@ -215,6 +215,7 @@ final class FulfillmentService
             manifestUrl: $this->stringOrNull($payload['manifest_url'] ?? null),
             pickupScheduledDate: $payload['pickup_scheduled_date'] ?? null,
             pickupTokenNumber: $payload['pickup_token_number'] ?? null,
+            expectedDeliveryDate: $this->stringOrNull($payload['etd'] ?? $payload['expected_delivery_date'] ?? $payload['estimated_delivery_date'] ?? null),
             walletBalance: $walletBalance,
             steps: [
                 'order_created' => (int) ($payload['order_created'] ?? 0) === 1,
