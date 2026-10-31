@@ -13,6 +13,7 @@ use Madgeek\LaravelShiprocket\Credentials\Credentials;
 use Madgeek\LaravelShiprocket\Exceptions\ShiprocketException;
 use Madgeek\LaravelShiprocket\Services\AccountService;
 use Madgeek\LaravelShiprocket\Services\AuthService;
+use Madgeek\LaravelShiprocket\Services\CancellationService;
 use Madgeek\LaravelShiprocket\Services\CourierService;
 use Madgeek\LaravelShiprocket\Services\DocumentService;
 use Madgeek\LaravelShiprocket\Services\FulfillmentService;
@@ -72,6 +73,7 @@ class ShiprocketServiceProvider extends ServiceProvider
         $this->app->singleton(PickupLocationService::class);
         $this->app->singleton(AccountService::class);
         $this->app->singleton(FulfillmentService::class);
+        $this->app->singleton(CancellationService::class);
         $this->app->singleton(ShiprocketManager::class);
     }
 

@@ -36,14 +36,15 @@ Entry points on `Madgeek\LaravelShiprocket\Facades\Shiprocket`:
 
 - `auth()`: optional only — `getToken()`, `login()`, `logout()`. Other services authenticate themselves.
 - `fulfill()`: `create($order, $options)` — wallet check, then forward-shipment (order + AWB + label + manifest + pickup) + invoice; returns `FulfillmentResult`
-- `orders()`: `create()`, `createForChannel()`, `update()`, `updatePickupLocation($ids, $location)`, `updateDeliveryAddress()`, `cancel($ids)`, `list($filters)`, `find($id)`, `export()`
+- `cancel()`: `order($orderId)`, `shipment($awb)`, `orderAndShipment($orderId)` — validated cancels; returns `CancellationResult`
+- `orders()`: `create()`, `createForChannel()`, `update()`, `updatePickupLocation($ids, $location)`, `updateDeliveryAddress()`, `cancel($ids)` (raw bulk), `list($filters)`, `find($id)`, `export()`
 - `couriers()`: `isServiceable($from, $to, $cod = false, $weight = 0.5)`, `availableCouriers($from, $to, $cod = false, $weight = 0.5)`, `isCodAvailable($from, $to, $weight = 0.5)`, `serviceability($query)` for the full payload, `list($type)`, `assignAwb($shipmentId, $courierId, reassign: bool)`, `requestPickup($shipmentIds, $options)`
-- `shipments()`: `list($filters)`, `find($id)`, `cancel($awbs)`
+- `shipments()`: `list($filters)`, `find($id)`, `cancel($awbs)` (raw bulk)
 - `documents()`: `generateLabel()`, `generateManifest()`, `printManifest()`, `generateInvoice()`, `generateLabelAndInvoice()`
 - `pickupLocations()`: `list()`, `create($payload)` — account pickup addresses used as `orders.pickup_location`
 - `account()`: `walletBalance()`
 
-Order and address bodies are the arrays from the Shiprocket API docs. Id arguments accept one id or a list. Low-level calls return `ShiprocketResponse`; `fulfill()->create()` returns `FulfillmentResult`.
+Order and address bodies are the arrays from the Shiprocket API docs. Id arguments accept one id or a list. Low-level calls return `ShiprocketResponse`; `fulfill()->create()` returns `FulfillmentResult`; `cancel()` returns `CancellationResult`.
 
 ### 3. Handle failures
 
@@ -52,6 +53,8 @@ Order and address bodies are the arrays from the Shiprocket API docs. Id argumen
 - `AuthenticationException` means the email/password login was rejected or missing
 - `InsufficientBalanceException` means the wallet check failed before anything was created (`$e->balance`, `$e->required`)
 - `ShipmentPipelineException` means a later fulfill step failed; use `$e->step()` and `$e->result()` for partial IDs/URLs
+- `OrderHasShipmentException` means `cancel()->order()` was blocked because an AWB exists; use `orderAndShipment()`
+- `ShipmentNotCancellableException` means the AWB is Out for Pickup or later
 - listen to `Madgeek\LaravelShiprocket\Events\RequestSending`, `RequestSent`, and `RequestFailed` for logging or metrics
 
 ## Rules, References, and Templates
@@ -82,6 +85,8 @@ try {
 } catch (ShipmentPipelineException $e) {
     $partial = $e->result(); // may already have order/shipment/awb/label
 }
+
+Shiprocket::cancel()->orderAndShipment($result->orderId());
 ```
 
 Step-by-step when you need finer control:

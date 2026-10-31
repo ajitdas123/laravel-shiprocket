@@ -134,12 +134,37 @@ Shiprocket::orders()->createForChannel([...]);      // POST /orders/create with 
 Shiprocket::orders()->update([...]);                // POST /orders/update/adhoc
 Shiprocket::orders()->updatePickupLocation([16167171], 'Delhi');
 Shiprocket::orders()->updateDeliveryAddress(['order_id' => 16178831, 'shipping_city' => 'Pune', ...]);
-Shiprocket::orders()->cancel([16168898, 16167171]);
+Shiprocket::orders()->cancel([16168898, 16167171]); // raw bulk cancel; prefer cancel() below
 
 Shiprocket::orders()->list(['page' => 1, 'per_page' => 50, 'filter_by' => 'status', 'filter' => 'NEW']);
 Shiprocket::orders()->find(16167171);
 Shiprocket::orders()->export(); // Shiprocket emails a CSV download link
 ```
+
+### Cancel order / shipment (validated)
+
+Prefer these over the raw `orders()->cancel()` / `shipments()->cancel()` helpers. They check Shiprocket state first and return a `CancellationResult`.
+
+```php
+use Madgeek\LaravelShiprocket\Exceptions\OrderHasShipmentException;
+use Madgeek\LaravelShiprocket\Exceptions\ShipmentNotCancellableException;
+
+// Order only — blocked if an AWB is already assigned
+Shiprocket::cancel()->order(222521420);
+
+// Shipment only — blocked at/after "Out for Pickup"
+Shiprocket::cancel()->shipment('14326421307048');
+
+// Shipment (when present) then order
+$result = Shiprocket::cancel()->orderAndShipment(222521420);
+$result->toArray();
+```
+
+Validation:
+
+- `cancel()->order()` looks up the order; if `data.shipments.awb` is set, it throws `OrderHasShipmentException` (use `orderAndShipment()` instead).
+- `cancel()->shipment()` tracks the AWB; if status is Out for Pickup or later (picked up, in transit, delivered, RTO, etc.), it throws `ShipmentNotCancellableException`.
+- `cancel()->orderAndShipment()` cancels the shipment first (when an AWB exists), then the order.
 
 ### Couriers and serviceability
 
@@ -177,7 +202,7 @@ Shiprocket::couriers()->requestPickup($shipmentId, ['status' => 'retry']);
 ```php
 Shiprocket::shipments()->list(['sort' => 'DESC', 'sort_by' => 'id']);
 Shiprocket::shipments()->find(16016920);
-Shiprocket::shipments()->cancel(['19041211125783']); // AWB numbers
+Shiprocket::shipments()->cancel(['19041211125783']); // raw bulk AWB cancel; prefer cancel()->shipment()
 ```
 
 ### Labels, manifests, and invoices
@@ -227,7 +252,7 @@ php artisan shiprocket:wallet
 
 ### Errors and events
 
-Non-2xx responses throw `Madgeek\LaravelShiprocket\Exceptions\RequestFailedException`. Rejected credentials throw `AuthenticationException`. `fulfill()->create()` can also throw `InsufficientBalanceException` (nothing created) or `ShipmentPipelineException` (partial result via `$e->result()`). These extend `ShiprocketException`, and `RequestFailedException::$response` holds the status and body, including Shiprocket's validation `errors`.
+Non-2xx responses throw `Madgeek\LaravelShiprocket\Exceptions\RequestFailedException`. Rejected credentials throw `AuthenticationException`. `fulfill()->create()` can also throw `InsufficientBalanceException` (nothing created) or `ShipmentPipelineException` (partial result via `$e->result()`). Validated cancels throw `OrderHasShipmentException` or `ShipmentNotCancellableException`. These extend `ShiprocketException`, and `RequestFailedException::$response` holds the status and body, including Shiprocket's validation `errors`.
 
 Each request dispatches `Madgeek\LaravelShiprocket\Events\RequestSending`, then `RequestSent` or `RequestFailed`.
 

@@ -6,6 +6,7 @@ namespace Madgeek\LaravelShiprocket;
 
 use Madgeek\LaravelShiprocket\Services\AccountService;
 use Madgeek\LaravelShiprocket\Services\AuthService;
+use Madgeek\LaravelShiprocket\Services\CancellationService;
 use Madgeek\LaravelShiprocket\Services\CourierService;
 use Madgeek\LaravelShiprocket\Services\DocumentService;
 use Madgeek\LaravelShiprocket\Services\FulfillmentService;
@@ -24,6 +25,7 @@ final class ShiprocketManager
         private readonly PickupLocationService $pickupLocations,
         private readonly AccountService $account,
         private readonly FulfillmentService $fulfill,
+        private readonly CancellationService $cancel,
     ) {}
 
     public function auth(): AuthService
@@ -64,5 +66,10 @@ final class ShiprocketManager
     public function fulfill(): FulfillmentService
     {
         return $this->fulfill;
+    }
+
+    public function cancel(): CancellationService
+    {
+        return $this->cancel;
     }
 }

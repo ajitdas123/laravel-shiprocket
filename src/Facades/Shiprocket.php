@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Facade;
 use Madgeek\LaravelShiprocket\Credentials\Credentials;
 use Madgeek\LaravelShiprocket\Services\AccountService;
 use Madgeek\LaravelShiprocket\Services\AuthService;
+use Madgeek\LaravelShiprocket\Services\CancellationService;
 use Madgeek\LaravelShiprocket\Services\CourierService;
 use Madgeek\LaravelShiprocket\Services\DocumentService;
 use Madgeek\LaravelShiprocket\Services\FulfillmentService;
@@ -31,6 +32,7 @@ use Madgeek\LaravelShiprocket\Transport\Transport;
  * @method static PickupLocationService pickupLocations()
  * @method static AccountService account()
  * @method static FulfillmentService fulfill()
+ * @method static CancellationService cancel()
  *
  * Authentication is automatic from SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD.
  * Prefer orders(), couriers(), and the other services over auth() unless you
@@ -106,6 +108,7 @@ final class Shiprocket extends Facade
             PickupLocationService::class,
             AccountService::class,
             FulfillmentService::class,
+            CancellationService::class,
             ShiprocketManager::class,
             Credentials::class,
         ] as $abstract) {

@@ -10,6 +10,7 @@ namespace Madgeek\LaravelShiprocket\Tests {
     use Madgeek\LaravelShiprocket\Facades\Shiprocket;
     use Madgeek\LaravelShiprocket\Services\AccountService;
     use Madgeek\LaravelShiprocket\Services\AuthService;
+    use Madgeek\LaravelShiprocket\Services\CancellationService;
     use Madgeek\LaravelShiprocket\Services\CourierService;
     use Madgeek\LaravelShiprocket\Services\DocumentService;
     use Madgeek\LaravelShiprocket\Services\FulfillmentService;
@@ -38,6 +39,7 @@ namespace Madgeek\LaravelShiprocket\Tests {
             PickupLocationService::class,
             AccountService::class,
             FulfillmentService::class,
+            CancellationService::class,
             ShiprocketManager::class,
             Credentials::class,
         ] as $abstract) {
